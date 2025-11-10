@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy 19th — Surprise for Her</title>
+<style>
+:root{
+  --bg1:#0b0710; --bg2:#12071a; --accent:#9b59b6; --accent2:#c77dff; --pale:#d9b3ff; --card:#161018;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:#fff;background:#0b0710;}
+body.unlock-ready{background: radial-gradient(800px 500px at 10% 10%, rgba(155,89,182,0.12), transparent), linear-gradient(180deg,var(--bg1),var(--bg2));}
+.app{opacity:0;pointer-events:none;transition:opacity .6s ease,filter .6s ease}
+.app.visible{opacity:1;pointer-events:auto}
+
+/* LOCK / CALENDAR */
+#lock{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(0,0,0,0.85),rgba(0,0,0,0.95));}
+.calCard{width:520px;max-width:94%;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:16px;padding:22px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+.calHeader{display:flex;align-items:center;gap:14px}
+.calTitle{font-size:20px;color:var(--accent);margin:0}
+.calSub{opacity:0.9;font-size:13px}
+.calendar{margin-top:14px;background:linear-gradient(180deg,rgba(155,89,182,0.04),transparent);padding:12px;border-radius:12px}
+.calTop{display:flex;justify-content:space-between;align-items:center}
+.month{font-weight:700;color:var(--pale)}
+.year{opacity:0.9}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:10px}
+.day{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;text-align:center;cursor:default}
+.day.clickable{cursor:pointer;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#1b0022;font-weight:700;box-shadow:0 6px 20px rgba(155,89,182,0.22)}
+.day.other{opacity:0.45}
+.calHint{margin-top:10px;font-size:13px;opacity:0.9}
+
+/* MAIN APP */
+header{padding:22px;display:flex;gap:18px;align-items:center}
+.greeting h1{margin:0;font-size:26px;color:var(--pale)}
+main{padding:18px}
+.layout{display:grid;grid-template-columns:1fr 420px;gap:18px}
+
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.gallery h3{margin:0 0 10px 0;color:var(--accent)}
+.thumbGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.thumb{height:92px;border-radius:10px;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,0.03)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.label{position:absolute;left:8px;top:8px;background:linear-gradient(90deg,var(--accent),var(--accent2));padding:4px 7px;border-radius:8px;font-size:12px;color:#1b0022}
+.replace{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,0.45);padding:6px;border-radius:8px;font-size:12px;cursor:pointer}
+.star{position:absolute;right:8px;top:8px;padding:6px;border-radius:8px;background:rgba(255,255,255,0.04);cursor:pointer}
+
+.shortList{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.msgBox{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;cursor:pointer;transition:all .22s}
+.msgBox.big{transform:scale(1.03);box-shadow:0 12px 30px rgba(0,0,0,0.6)}
+
+.longMsg{margin-top:12px;background:linear-gradient(90deg, rgba(155,89,182,0.06), rgba(215,179,255,0.03));padding:12px;border-radius:10px;border:1px solid rgba(155,89,182,0.12)}
+.editable{min-height:100px;outline:none}
+
+/* FINAL STAGE */
+.stageWrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+.stage{width:100%;height:260px;border-radius:12px;background:linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.mainPic{width:180px;height:180px;border-radius:14px;object-fit:cover;box-shadow:0 12px 30px rgba(0,0,0,0.6);border:6px solid rgba(255,255,255,0.04);transition:transform .3s}
+.mainPic.decor{border-image:linear-gradient(90deg,var(--accent),var(--accent2)) 1;}
+
+/* purple line and hearts */
+.lineArea{position:relative;width:100%;height:80px;margin-top:8px;overflow:visible}
+.glowLine{position:absolute;left:0;right:0;bottom:20px;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 6px 30px rgba(155,89,182,0.35);opacity:0;transform:scaleX(0);transform-origin:left center;transition:opacity .4s,transform .6s}
+.glowLine.show{opacity:1;transform:scaleX(1)}
+.heart{position:absolute;font-size:20px;opacity:0;text-shadow:0 0 10px #c77dff,0 0 20px #9b59b6; animation:rise 3s linear infinite}
+@keyframes rise{0%{transform:translateY(0) scale(0.8);opacity:1}80%{opacity:1}100%{transform:translateY(-260px) scale(1.2);opacity:0}}
+
+.controls{display:flex;flex-direction:column;gap:10px}
+.btn{cursor:pointer;padding:12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#1b0022;font-weight:700}
+.small{font-size:13px;opacity:0.9}
+
+footer{padding:10px;text-align:center;font-size:13px;opacity:0.9}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.thumbGrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.thumbGrid{grid-template-columns:repeat(2,1fr)}.stage{height:200px}}
+</style>
+</head>
+<body>
+
+<!-- LOCK / CALENDAR SCREEN -->
+<div id="lock">
+  <div class="calCard">
+    <div class="calHeader">
+      <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent2))"></div>
+      <div>
+        <h3 class="calTitle">Open the Surprise</h3>
+        <div class="calSub">Select your special date to unlock.</div>
+      </div>
+    </div>
+
+    <div class="calendar" role="application">
+      <div class="calTop">
+        <div class="month">Birthday Password</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <select id="yearSelect"></select>
+        <select id="monthSelect"></select>
+        <select id="daySelect"></select>
+        <button id="pwTry" class="btn" style="padding:10px">Unlock</button>
+      </div>
+      <div class="calHint">Your special day 💜</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="app">
+  <header>
+    <div class="greeting">
+      <h1 id="headerTitle">🎉 Happy 19th Birthday, my love!</h1>
+      <div class="small">Made with all my heart 💜</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="layout">
+      <section class="card gallery">
+        <h3>Photos — (19)</h3>
+        <div class="thumbGrid" id="thumbGrid"></div>
+        <div style="margin-top:10px;font-size:13px;opacity:0.9">Click replace to upload. Click star to select main photo for stage.</div>
+      </section>
+
+      <aside class="card">
+        <h3 style="color:var(--accent);margin:0">Short Sweet Notes</h3>
+        <div class="shortList" id="shortList"></div>
+        <div class="longMsg">
+          <h4 style="margin:0;color:var(--accent)">Long Message (editable)</h4>
+          <div id="longMessage" class="editable" contenteditable="true">Hey love — today I want to tell you how much you mean to me. You are my smile, my calm, my crazy, and my best friend. Happy 19th! (Click to edit)</div>
+        </div>
+      </aside>
+    </div>
+
+    <section style="margin-top:18px;display:grid;grid-template-columns:1fr 360px;gap:18px">
+      <div class="card stageWrap">
+        <h3 style="margin:0;color:var(--accent)">Surprise Stage</h3>
+        <div class="stage" id="stage">
+          <img id="mainPhoto" class="mainPic" src="" alt="Main photo" style="display:none">
+          <div class="lineArea" id="lineArea">
+            <div class="glowLine" id="glowLine"></div>
+          </div>
+        </div>
+        <div id="finalText" class="small">Press the button to start the surprise.</div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin:0;color:var(--accent)">Controls</h4>
+        <div class="controls">
+          <button id="surpriseBtn" class="btn">🎂 Happy Birthday my love — Click me</button>
+          <div class="small">Admin-only: Replace surprise photo inside JS using your password</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Made with ❤ — open in a modern browser. Music plays after unlocking.</footer>
+</div>
+
+<input id="fileInput" type="file" accept="image/*" style="display:none" />
+<!-- Audio for Happy Birthday piano -->
+<audio id="birthdayAudio" src="happy_birthday_piano.mp3" preload="auto"></audio>
+
+<script>
+// ====== CONFIG ======
+const BIRTHDAY = {year:2006, month:11, day:11};
+const TOTAL=19;
+let images = new Array(TOTAL).fill('');
+let selectedIndex = 0;
+let heartInterval=null;
+
+// ====== CALENDAR / PASSWORD ======
+const yearSelect = document.getElementById('yearSelect');
+const monthSelect = document.getElementById('monthSelect');
+const daySelect = document.getElementById('daySelect');
+for(let y=2000;y<=2025;y++){ let o=document.createElement('option'); o.value=y; o.textContent=y; yearSelect.appendChild(o);}
+for(let m=1;m<=12;m++){ let o=document.createElement('option'); o.value=m; o.textContent=m; monthSelect.appendChild(o);}
+function updateDays(){
+  const y=parseInt(yearSelect.value), m=parseInt(monthSelect.value);
+  const daysInMonth=new Date(y,m,0).getDate();
+  daySelect.innerHTML='';
+  for(let d=1;d<=daysInMonth;d++){ let o=document.createElement('option'); o.value=d; o.textContent=d; daySelect.appendChild(o);}
+}
+for(let d=1;d<=31;d++){ let o=document.createElement('option'); o.value=d; o.textContent=d; daySelect.appendChild(o);}
+yearSelect.addEventListener('change',updateDays);
+monthSelect.addEventListener('change',updateDays);
+updateDays();
+
+document.getElementById('pwTry').addEventListener('click',()=>{
+  const y=yearSelect.value, m=monthSelect.value.padStart(2,'0'), d=daySelect.value.padStart(2,'0');
+  if(parseInt(y)===BIRTHDAY.year && parseInt(m)===BIRTHDAY.month && parseInt(d)===BIRTHDAY.day) unlock();
+  else alert('Incorrect date. Try again 💜');
+});
+
+// ====== UNLOCK ======
+const lockDiv=document.getElementById('lock'); const app=document.getElementById('app');
+function unlock(){
+  document.body.classList.add('unlock-ready');
+  lockDiv.style.transition='opacity .6s'; lockDiv.style.opacity=0; setTimeout(()=>lockDiv.style.display='none',600);
+  app.classList.add('visible');
+  startMusic();
+}
+
+// ====== MUSIC ======
+function startMusic(){
+  const audio = document.getElementById('birthdayAudio');
+  audio.play().catch(e => console.warn('Audio play failed:', e));
+}
+
+// ====== THUMBNAILS ======
+const thumbGrid=document.getElementById('thumbGrid');
+for(let i=0;i<TOTAL;i++){
+  const div=document.createElement('div'); div.className='thumb'; div.dataset.index=i;
+  const img=document.createElement('img'); img.alt='Photo '+(i+1);
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%239b59b6'/><stop offset='1' stop-color='%23d7b3ff'/></linearGradient></defs><rect width='100%' height='100%' fill='url(%23g)' rx='12'/><text x='50%' y='50%' font-family='Arial' font-size='36' fill='white' text-anchor='middle' dominant-baseline='middle'>Photo ${i+1}</text></svg>`;
+  img.src='data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+  div.appendChild(img);
+  const label=document.createElement('div'); label.className='label'; label.textContent=(i+1); div.appendChild(label);
+  const star=document.createElement('div'); star.className='star'; star.innerHTML='★'; star.title='Mark as main photo'; star.addEventListener('click',(e)=>{e.stopPropagation(); setMain(i);} ); div.appendChild(star);
+  const rep=document.createElement('div'); rep.className='replace'; rep.textContent='Replace'; rep.addEventListener('click',(e)=>{ e.stopPropagation(); chooseFile(i); }); div.appendChild(rep);
+  div.addEventListener('click', ()=>{ openPreview(i); });
+  thumbGrid.appendChild(div);
+}
+function chooseFile(index){
+  const fileInput=document.getElementById('fileInput');
+  fileInput.onchange=(ev)=>{ const f=ev.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ images[index]=r.result; thumbGrid.querySelector(`[data-index='${index}'] img`).src=images[index]; if(index===selectedIndex) updateMainPhoto(); }; r.readAsDataURL(f); fileInput.value=''; };
+  fileInput.click();
+}
+function setMain(i){ selectedIndex=i; thumbGrid.querySelectorAll('.thumb').forEach(t=>t.style.boxShadow=''); const sel=thumbGrid.querySelector(`[data-index='${i}']`); if(sel) sel.style.boxShadow='0 8px 30px rgba(155,89,182,0.18)'; updateMainPhoto(); }
+function updateMainPhoto(){ const mp=document.getElementById('mainPhoto'); if(images[selectedIndex]){ mp.src=images[selectedIndex]; mp.style.display='block'; mp.classList.add('decor'); } else { mp.style.display='none'; } }
+function openPreview(i){ const url = images[i]||thumbGrid.querySelector(`[data-index='${i}'] img`).src; const w=window.open('','_blank'); w.document.write(`<img src="${url}" style="max-width:100%;display:block;margin:20px auto;">`); }
+setMain(0);
+
+// ====== SHORT MESSAGES ======
+const SHORT_MESSAGES=['You make my heart skip a beat.','Your laugh = my favorite song.','You are my safe place.','19 looks so beautiful on you.','I love your smile more every day.','Thank you for being you.','Forever starts with you.','You + me = ❤️','My favorite person, always.'];
+const shortList=document.getElementById('shortList'); SHORT_MESSAGES.forEach(t=>{ const box=document.createElement('div'); box.className='msgBox'; box.innerHTML=`<p>${t}</p>`; box.addEventListener('click',()=>box.classList.toggle('big')); shortList.appendChild(box); });
+
+// ====== SURPRISE: heart shape ======
+const surpriseBtn=document.getElementById('surpriseBtn'); 
+const glowLine=document.getElementById('glowLine'); 
+const lineArea=document.getElementById('lineArea');
+
+surpriseBtn.addEventListener('click', ()=>{
+  glowLine.classList.add('show');
+  spawnHearts();
+});
+
+function spawnHearts(){
+  if(heartInterval) return;
+  const lineWidth = lineArea.offsetWidth;
+  let t = 0;
+  heartInterval = setInterval(()=>{
+    const h=document.createElement('div'); 
+    h.className='heart';
+    const scale = 8;
+    const x = 16 * Math.pow(Math.sin(t),3);
+    const y = 13 * Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t);
+    h.style.left = ((x+20)/40*100)+'%';
+    h.style.bottom = (y*2+26)+'px';
+    h.style.fontSize = (12+Math.random()*28)+'px';
+    h.style.animationDuration = (2.4 + Math.random()*1.4)+'s';
+    h.style.opacity = 0.9;
+    h.textContent='❤️';
+    lineArea.appendChild(h);
+    t += 0.1;
+    setTimeout(()=>{ h.remove(); },5000);
+  },200);
+}
+
+// ====== Header edit
+document.getElementById('headerTitle').addEventListener('click', ()=>{ const t=prompt('Edit header greeting:', document.getElementById('headerTitle').innerText); if(t!==null) document.getElementById('headerTitle').innerText=t; });
+</script>
+</body>
+</html>
