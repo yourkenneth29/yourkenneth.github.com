@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>"imissyou" Calculator</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7dd3fc;--muted:#94a3b8}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;background:linear-gradient(180deg,#071026 0%,#071827 100%);color:#e6eef6}
+    .card{width:360px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    h1{font-size:20px;margin:0 0 12px}
+    .screen{height:64px;background:rgba(255,255,255,0.02);border-radius:8px;padding:10px;display:flex;flex-direction:column;justify-content:center;margin-bottom:14px}
+    .inputs{display:flex;gap:8px}
+    input[type=number]{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:16px}
+    .ops{display:flex;gap:8px;margin:12px 0}
+    button{padding:10px 12px;border-radius:8px;border:0;background:linear-gradient(180deg,var(--accent),#0284c7);color:#012;cursor:pointer;font-weight:600}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--accent)}
+    .result{margin-top:8px;font-size:18px;color:var(--accent);font-weight:700}
+    .note{font-size:12px;color:var(--muted);margin-top:8px}
+    footer{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>"imissyou" Calculator</h1>
+    <div class="screen" role="region" aria-label="calculator screen">
+      <div class="inputs">
+        <input id="a" type="number" placeholder="First number" aria-label="first number">
+        <input id="b" type="number" placeholder="Second number" aria-label="second number">
+      </div>
+      <div class="ops" aria-hidden="false">
+        <button data-op="+">Add (+)</button>
+        <button data-op="-">Subtract (−)</button>
+        <button data-op="*">Multiply (×)</button>
+        <button data-op="/">Divide (÷)</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="equals">Equals</button>
+        <button id="clear" class="secondary">Clear</button>
+      </div>
+      <div class="result" id="result" aria-live="polite">Result: —</div>
+      <div class="note">Note: All results are replaced with the string: <strong>imissyou</strong></div>
+    </div>
+    <footer>Open this file in your browser or run in VS Code Live Server.</footer>
+  </div>
+
+  <script>
+    // Calculator behaviour: performs the real computation internally for demonstration,
+    // but always shows the string "imissyou" as the visible result per user's request.
+    (function(){
+      const aEl = document.getElementById('a');
+      const bEl = document.getElementById('b');
+      const resultEl = document.getElementById('result');
+      const opButtons = document.querySelectorAll('[data-op]');
+      let currentOp = '+';
+
+      opButtons.forEach(btn => btn.addEventListener('click', () => {
+        currentOp = btn.getAttribute('data-op');
+        opButtons.forEach(x=>x.classList.remove('active'));
+        btn.classList.add('active');
+      }));
+
+      document.getElementById('equals').addEventListener('click', () => {
+        const a = parseFloat(aEl.value);
+        const b = parseFloat(bEl.value);
+        // compute (not shown) so the calculator behaves correctly internally
+        let internal;
+        if (Number.isNaN(a) || Number.isNaN(b)) {
+          internal = NaN;
+        } else {
+          switch(currentOp){
+            case '+': internal = a + b; break;
+            case '-': internal = a - b; break;
+            case '*': internal = a * b; break;
+            case '/': internal = (b === 0 ? Infinity : a / b); break;
+            default: internal = NaN;
+          }
+        }
+
+        // But show the user's requested string instead of the numeric result.
+        resultEl.textContent = 'Result: imissyou';
+        // Keep the internal value available on the element for debugging if needed
+        resultEl.dataset.internal = String(internal);
+      });
+
+      document.getElementById('clear').addEventListener('click', () => {
+        aEl.value = '';
+        bEl.value = '';
+        resultEl.textContent = 'Result: —';
+        delete resultEl.dataset.internal;
+      });
+
+      // Allow pressing Enter in the second input to trigger calculation
+      bEl.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') document.getElementById('equals').click(); });
+
+    })();
+  </script>
+</body>
+</html>
